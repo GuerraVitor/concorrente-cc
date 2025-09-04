@@ -1,0 +1,5 @@
+criar threads:
+
+1. criar array do tipo pthread_t
+
+2. usa pthread_create

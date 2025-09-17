@@ -1,0 +1,2 @@
+atividade 1:
+3 - a execução muda a ordem em que as thread sao temrinadas/iniciadas.

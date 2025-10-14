@@ -1,0 +1,3 @@
+/* 
+sequencia para programa conconrrente
+*/

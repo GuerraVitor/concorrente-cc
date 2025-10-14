@@ -41,44 +41,34 @@ int ehPrimo(long long int n) {
 
 // Função da thread produtora
 void* producer_thread(void* arg) {
-    long long int i;
     int num_consumers = *((int*)arg);
-    
-    // Parte 1: Produtora insere os primeiros M elementos de uma vez
-    // Espera o buffer ficar completamente vazio.
-    sem_wait(&mutex); // Protege o acesso ao buffer
-    
-    // Espera por M slots vazios
-    for (i = 0; i < M_BUFFER_SIZE; i++) {
-        sem_wait(&empty_slots);
+    int current_number = 1;
+
+    while (current_number <= N_NUMBERS) {
+        // Espera o buffer ficar completamente vazio
+        for (int i = 0; i < M_BUFFER_SIZE; i++) {
+            sem_wait(&empty_slots);
+        }
+
+        // Preenche o buffer com um lote de números
+        sem_wait(&mutex); // Protege o acesso ao buffer para escrita
+        int items_to_produce = 0;
+        while (items_to_produce < M_BUFFER_SIZE && current_number <= N_NUMBERS) {
+            buffer[write_index] = current_number;
+            write_index = (write_index + 1) % M_BUFFER_SIZE;
+            current_number++;
+            items_to_produce++;
+        }
+        sem_post(&mutex);
+
+        // Libera os slots preenchidos para os consumidores
+        for (int i = 0; i < items_to_produce; i++) {
+            sem_post(&full_slots);
+        }
     }
 
-    // Insere todos os M elementos de uma vez.
-    for (i = 0; i < M_BUFFER_SIZE; i++) {
-        buffer[i] = i + 1;
-    }
-    
-    // Libera os slots completos para as consumidoras.
-    sem_post(&mutex);
-    for (i = 0; i < M_BUFFER_SIZE; i++) {
-        sem_post(&full_slots);
-    }
-    
-    // Parte 2: Continua a produzir os N-M números restantes, um por um.
-    for (i = M_BUFFER_SIZE + 1; i <= N_NUMBERS; i++) {
-        sem_wait(&empty_slots);
-        sem_wait(&mutex);
-        
-        buffer[write_index] = i;
-        write_index = (write_index + 1) % M_BUFFER_SIZE;
-        
-        sem_post(&mutex);
-        sem_post(&full_slots);
-    }
-    
     // Sinaliza o fim do trabalho para todas as threads consumidoras
-    for (i = 0; i < num_consumers; i++) {
-        sem_wait(&empty_slots);
+    for (int i = 0; i < num_consumers; i++) {
         sem_wait(&mutex);
         buffer[write_index] = -1; // Sentinela
         write_index = (write_index + 1) % M_BUFFER_SIZE;
@@ -104,12 +94,11 @@ void* consumer_thread(void* arg) {
         sem_post(&mutex);
         
         if (number_to_check == -1) {
-            // Se for o sinal de parada, re-envia para a próxima consumidora
-            sem_post(&empty_slots);
+            // Se for o sinal de parada, a thread deve terminar. O produtor já enviou um -1 para cada consumidor.
             break; // Sai do loop
         }
         
-        sem_post(&empty_slots);
+        sem_post(&empty_slots); // Sinaliza que um slot foi esvaziado
         
         // Verifica a primalidade e atualiza as estatísticas
         if (ehPrimo(number_to_check)) {
@@ -117,7 +106,7 @@ void* consumer_thread(void* arg) {
         }
     }
 
-    // Atualiza as variáveis globais de forma segura
+    // Atualiza as variáveis globais
     sem_wait(&mutex);
     total_primes += my_data->primes_found;
     if (my_data->primes_found > max_primes_found) {
@@ -144,7 +133,16 @@ int main(int argc, char* argv[]) {
 
     // Aloca o buffer e o array de estatísticas das consumidoras
     buffer = (int*)malloc(sizeof(int) * M_BUFFER_SIZE);
+    if (buffer == NULL) {
+        fprintf(stderr, "Erro: Falha ao alocar memória para o buffer.\n");
+        return 2;
+    }
     consumer_stats = (consumer_data*)malloc(sizeof(consumer_data) * num_consumers);
+    if (consumer_stats == NULL) {
+        fprintf(stderr, "Erro: Falha ao alocar memória para as estatísticas dos consumidores.\n");
+        free(buffer);
+        return 3;
+    }
 
     // Inicializa os semáforos
     sem_init(&empty_slots, 0, M_BUFFER_SIZE); // Inicialmente, o buffer está vazio
@@ -154,15 +152,33 @@ int main(int argc, char* argv[]) {
     // Cria as threads
     pthread_t producer_tid;
     pthread_t* consumer_tids = (pthread_t*)malloc(sizeof(pthread_t) * num_consumers);
+    if (consumer_tids == NULL) {
+        fprintf(stderr, "Erro: Falha ao alocar memória para os IDs das threads consumidoras.\n");
+        free(buffer);
+        free(consumer_stats);
+        return 4;
+    }
 
     // Cria a thread produtora
-    pthread_create(&producer_tid, NULL, producer_thread, (void*)&num_consumers);
+    if (pthread_create(&producer_tid, NULL, producer_thread, (void*)&num_consumers)) {
+        fprintf(stderr, "Erro: Falha ao criar a thread produtora.\n");
+        free(buffer);
+        free(consumer_stats);
+        free(consumer_tids);
+        return 5;
+    }
 
     // Cria as threads consumidoras
     for (int i = 0; i < num_consumers; i++) {
         consumer_stats[i].id = i;
         consumer_stats[i].primes_found = 0;
-        pthread_create(&consumer_tids[i], NULL, consumer_thread, (void*)&consumer_stats[i]);
+        if (pthread_create(&consumer_tids[i], NULL, consumer_thread, (void*)&consumer_stats[i])) {
+            fprintf(stderr, "Erro: Falha ao criar a thread consumidora %d.\n", i);
+            free(buffer);
+            free(consumer_stats);
+            free(consumer_tids);
+            return 6;
+        }
     }
 
     // Aguarda o término das threads

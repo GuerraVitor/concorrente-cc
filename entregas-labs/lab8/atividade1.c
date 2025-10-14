@@ -1,8 +1,11 @@
+// Compile com: gcc -o atividade1 atividade1.c prime_counter.c -lpthread -lm
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <math.h>
+#include "prime_counter.h"
 
 // Variáveis globais para o buffer e sincronização
 int* buffer;
@@ -187,8 +190,20 @@ int main(int argc, char* argv[]) {
         pthread_join(consumer_tids[i], NULL);
     }
 
+    // --- Verificação Sequencial ---
+    printf("\n--- Verificação ---\n");
+    int sequential_prime_count = count_primes_sequentially(N_NUMBERS);
+
     // Exibe os resultados
     printf("Quantidade total de primos encontrados: %d\n", total_primes);
+    printf("Contagem concorrente de primos: %d\n", total_primes);
+    printf("Contagem sequencial de primos:  %d\n", sequential_prime_count);
+    if (total_primes == sequential_prime_count) {
+        printf("Resultado: As contagens são IGUAIS.\n");
+    } else {
+        printf("Resultado: As contagens são DIFERENTES.\n");
+    }
+    printf("\n--- Detalhes da Execução Concorrente ---\n");
     printf("Thread consumidora vencedora (ID): %d\n", winner_consumer_id);
     printf("Quantidade de primos encontrados pela vencedora: %d\n", max_primes_found);
 

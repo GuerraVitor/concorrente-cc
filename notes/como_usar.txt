@@ -1,9 +1,0 @@
-Para usar os programas, primeiro compile o gera_dados.c para criar um arquivo de teste e, em seguida, compile o produto_interno.conc.c com a flag -lpthread para executar o cálculo concorrente usando o arquivo de teste.
-
-ex: gera dados para 5000 dimensoes e depois calcula e compara os resultados do calculo com 4 threads
-
-gcc gera_dados.c -o gera_dados
-./gera_dados 5000 dados.bin
-
-gcc produto_interno.conc.c -o produto_interno_conc -lpthread
-./produto_interno_conc 4 dados.bin

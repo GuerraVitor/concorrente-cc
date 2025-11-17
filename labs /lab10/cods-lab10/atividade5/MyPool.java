@@ -6,9 +6,9 @@ import java.util.LinkedList;
 
 //-------------------------------------------------------------------------------
 /**
- * A classe FilaTarefas implementa um pool de threads simples.
- * Ela gerencia uma fila de tarefas (Runnable) e um conjunto de threads trabalhadoras
- * para processar essas tarefas de forma concorrente.
+ * A classe FilaTarefas implementa um pool de threads customizado.
+ * Ela gerencia um conjunto de threads trabalhadoras e uma fila de tarefas (Runnables).
+ * As tarefas são executadas pelas threads disponíveis no pool.
  */
 class FilaTarefas {
     private final int nThreads;
@@ -18,7 +18,7 @@ class FilaTarefas {
 
     /**
      * Construtor da FilaTarefas.
-     * @param nThreads O número de threads trabalhadoras no pool.
+     * @param nThreads O número de threads a serem criadas no pool.
      */
     public FilaTarefas(int nThreads) {
         this.shutdown = false;
@@ -26,8 +26,7 @@ class FilaTarefas {
         queue = new LinkedList<Runnable>();
         threads = new MyPoolThreads[nThreads];
         for (int i=0; i<nThreads; i++) {
-            // Adiciona o id para facilitar a depuração
-            threads[i] = new MyPoolThreads(i);
+            threads[i] = new MyPoolThreads("PoolThread-" + (i+1));
             threads[i].start();
         }
     }
@@ -40,6 +39,10 @@ class FilaTarefas {
         }
     }
 
+    /**
+     * Sinaliza para o pool de threads encerrar. Novas tarefas não são mais aceitas.
+     * As threads existentes terminam após completarem suas tarefas atuais e a fila de tarefas esvaziar.
+     */
     public void shutdown() {
         synchronized(queue) {
             this.shutdown=true;
@@ -51,19 +54,15 @@ class FilaTarefas {
     }
 
     /**
-     * A classe interna MyPoolThreads representa uma thread trabalhadora do pool.
+     * Classe interna que representa uma thread trabalhadora do pool.
      * Cada thread executa tarefas da fila em um loop contínuo até que o pool seja encerrado.
      */
     private class MyPoolThreads extends Thread {
-       private int id;
 
-       /**
-        * Construtor da thread trabalhadora.
-        * @param id Identificador da thread.
-        */
-       public MyPoolThreads(int id) {
-           this.id = id;
+       public MyPoolThreads(String name) {
+           super(name);
        }
+
        public void run() {
          Runnable r;
          while (true) {
@@ -72,7 +71,6 @@ class FilaTarefas {
                try { queue.wait(); }
                catch (InterruptedException ignored){}
              }
-             // Se a fila estiver vazia e o shutdown foi chamado, a thread termina.
              if (queue.isEmpty() && shutdown) {
                  return;
              }
@@ -109,7 +107,7 @@ class Primo implements Runnable {
        if (n <= 1) return false;
        if (n == 2) return true;
        if (n % 2 == 0) return false;
-       for (int i = 3; i * i <= n; i += 2) {
+       for (int i = 3; i < Math.sqrt(n) + 1; i += 2) {
            if (n % i == 0) return false;
        }
        return true;
@@ -134,9 +132,9 @@ class MyPool {
 
       //--PASSO 3: dispara a execução dos objetos runnable usando o pool de threads
       for (int i = 0; i < 25; i++) {
-        final String m = "Hello da tarefa " + i;
-        Runnable hello = new Hello(m);
-        pool.execute(hello);
+        //final String m = "Hello da tarefa " + i;
+        //Runnable hello = new Hello(m);
+        //pool.execute(hello);
         Runnable primo = new Primo(i);
         pool.execute(primo);
       }

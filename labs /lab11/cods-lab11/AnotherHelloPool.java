@@ -6,6 +6,7 @@
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 //classe runnable
 class Worker implements Runnable {
@@ -15,14 +16,12 @@ class Worker implements Runnable {
   Worker(long numSteps) {
     this.steps = numSteps;
   }
- 
+
   //método para execução
   public void run() {
-    long s = 0;
     for (long i=1; i<this.steps; i++) {
-      s += i;
+      AnotherHelloPool.incrementaVariavelCompartilhada();
     }
-    System.out.println(s);
   }
 }
 
@@ -30,6 +29,9 @@ class Worker implements Runnable {
 public class AnotherHelloPool {
   private static final int NTHREADS = 10;
   private static final int WORKERS = 50;
+
+  // Variável compartilhada que será incrementada pelas threads
+  private static AtomicLong variavelCompartilhada = new AtomicLong(0);
 
   public static void main(String[] args) {
     //cria um pool de threads (NTHREADS)
@@ -45,5 +47,13 @@ public class AnotherHelloPool {
     //espera todas as threads terminarem
     while (!executor.isTerminated()) {}
     System.out.println("Terminou");
+    System.out.println("Valor final da variável compartilhada: " + variavelCompartilhada.get());
    }
+
+  /**
+   * Incrementa a variável compartilhada de forma segura (thread-safe).
+   */
+  public static void incrementaVariavelCompartilhada() {
+    variavelCompartilhada.incrementAndGet();
+  }
 }

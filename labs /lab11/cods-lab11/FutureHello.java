@@ -15,54 +15,58 @@ import java.util.List;
 
 
 //classe runnable
-class MyCallable implements Callable<Long> {
-  //construtor
-  MyCallable() {}
- 
-  //método para execução
-  public Long call() throws Exception {
-    long s = 0;
-    for (long i=1; i<=100; i++) {
-      s++;
+class PrimoCallable implements Callable<Integer> {
+    private final long numero;
+
+    public PrimoCallable(long numero) {
+        this.numero = numero;
     }
-    return s;
-  }
+
+    private boolean ehPrimo(long n) {
+        if (n <= 1) return false;
+        if (n == 2) return true;
+        if (n % 2 == 0) return false;
+        for (long i = 3; i * i <= n; i += 2) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public Integer call() {
+        return ehPrimo(numero) ? 1 : 0;
+    }
 }
 
 //classe do método main
-public class FutureHello  {
-  private static final int N = 3;
-  private static final int NTHREADS = 10;
+public class FuturePool {
+    private static final int N = 100_000; // Intervalo para verificar primos: 1 a N
+    private static final int NTHREADS = 10;
 
-  public static void main(String[] args) {
-    //cria um pool de threads (NTHREADS)
-    ExecutorService executor = Executors.newFixedThreadPool(NTHREADS);
-    //cria uma lista para armazenar referencias de chamadas assincronas
-    List<Future<Long>> list = new ArrayList<Future<Long>>();
+    public static void main(String[] args) {
+        //cria um pool de threads (NTHREADS)
+        ExecutorService executor = Executors.newFixedThreadPool(NTHREADS);
+        //cria uma lista para armazenar referencias de chamadas assincronas (Futures)
+        List<Future<Integer>> list = new ArrayList<>();
 
-    for (int i = 0; i < N; i++) {
-      Callable<Long> worker = new MyCallable();
-      /*submit() permite enviar tarefas Callable ou Runnable e obter um objeto Future para acompanhar o progresso e recuperar o resultado da tarefa
-       */
-      Future<Long> submit = executor.submit(worker);
-      list.add(submit);
+        // Submete uma tarefa para cada número no intervalo de 1 a N
+        for (int i = 1; i <= N; i++) {
+            Callable<Integer> worker = new PrimoCallable(i);
+            Future<Integer> future = executor.submit(worker);
+            list.add(future);
+        }
+
+        // Recupera os resultados e faz o somatório final
+        int totalPrimos = 0;
+        for (Future<Integer> future : list) {
+            try {
+                totalPrimos += future.get(); // get() bloqueia até a computação terminar
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Quantidade de números primos entre 1 e " + N + ": " + totalPrimos);
+        executor.shutdown();
     }
-
-    System.out.println(list.size());
-    //pode fazer outras tarefas...
-
-    //recupera os resultados e faz o somatório final
-    long sum = 0;
-    for (Future<Long> future : list) {
-      try {
-        sum += future.get(); //bloqueia se a computação nao tiver terminado
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } catch (ExecutionException e) {
-        e.printStackTrace();
-      }
-    }
-    System.out.println(sum);
-    executor.shutdown();
-  }
 }

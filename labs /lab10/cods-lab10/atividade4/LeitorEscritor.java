@@ -7,7 +7,7 @@ class LeitorEscritor {
     // Variáveis estáticas
     public static int var = 0;
     public static Monitor monitor = new Monitor();
-    
+
     static final int T1_Counter = 10;
     static final int T2_Counter = 11;
     static final int T3_Counter = 12;
@@ -20,11 +20,11 @@ class LeitorEscritor {
 
         class T1 extends Thread {
             private int id;
-        
+
             public T1(int id) {
                 this.id = id;
             }
-        
+
             public void run() {
                 monitor.EntraEscritor("\"" + this.getClass().getSimpleName() + ", id " + this.id + "\"");
                 var++;
@@ -34,11 +34,11 @@ class LeitorEscritor {
 
         class T2 extends Thread {
             private int id;
-        
+
             public T2(int id) {
                 this.id = id;
             }
-        
+
             public void run() {
                 monitor.EntraLeitor("\"" + this.getClass().getSimpleName() + ", id " + this.id + "\"");
                 if (var % 2 == 0) {
@@ -49,14 +49,14 @@ class LeitorEscritor {
                 monitor.SaiLeitor("\"" + this.getClass().getSimpleName() + ", id " + this.id + "\"");
             }
         }
-        
+
         class T3 extends Thread {
             private int id;
-        
+
             public T3(int id) {
                 this.id = id;
             }
-        
+
             public void run() {
                 monitor.EntraLeitor("\"" + this.getClass().getSimpleName() + ", id " + this.id + "\"");
                 System.out.println("print(\"Var = " + var + "\")");
@@ -80,7 +80,7 @@ class LeitorEscritor {
         // Inicia o log de saida
         System.out.println ("import verificaLE");
         System.out.println ("le = verificaLE.LE()");
-        
+
         for (int i = 0; i < T1_Counter; i++) {
             T1_Array[i] = new T1(i);
             T1_Array[i].start();
@@ -104,52 +104,52 @@ class LeitorEscritor {
 //--------------------------------------------------------
 // Monitor que implementa a logica do padrao leitores/escritores
 class Monitor {
-  private int leit, escr;  
-  
-  // Construtor
-  Monitor() { 
-     this.leit = 0; //leitores lendo (0 ou mais)
-     this.escr = 0; //escritor escrevendo (0 ou 1)
-  } 
-  
-  // Entrada para leitores
-  public synchronized void EntraLeitor (String id) {
-    try { 
-      while (this.escr > 0) {
-      //if (this.escr > 0) {
-         System.out.println ("le.leitorBloqueado("+id+")");
-         wait();  //bloqueia pela condicao logica da aplicacao 
-      }
-      this.leit++;  //registra que ha mais um leitor lendo
-      System.out.println ("le.leitorLendo("+id+")");
-    } catch (InterruptedException e) { }
-  }
-  
-  // Saida para leitores
-  public synchronized void SaiLeitor (String id) {
-     this.leit--; //registra que um leitor saiu
-     if (this.leit == 0) 
-           this.notify(); //libera escritor (caso exista escritor bloqueado)
-     System.out.println ("le.leitorSaindo("+id+")");
-  }
-  
-  // Entrada para escritores
-  public synchronized void EntraEscritor (String id) {
-    try { 
-      while ((this.leit > 0) || (this.escr > 0)) {
-      //if ((this.leit > 0) || (this.escr > 0)) {
-         System.out.println ("le.escritorBloqueado("+id+")");
-         wait();  //bloqueia pela condicao logica da aplicacao 
-      }
-      this.escr++; //registra que ha um escritor escrevendo
-      System.out.println ("le.escritorEscrevendo("+id+")");
-    } catch (InterruptedException e) { }
-  }
-  
-  // Saida para escritores
-  public synchronized void SaiEscritor (String id) {
-     this.escr--; //registra que o escritor saiu
-     notifyAll(); //libera leitores e escritores (caso existam leitores ou escritores bloqueados)
-     System.out.println ("le.escritorSaindo("+id+")");
-  }
+	private int leit, escr;
+
+	// Construtor
+	Monitor() {
+		this.leit = 0; //leitores lendo (0 ou mais)
+		this.escr = 0; //escritor escrevendo (0 ou 1)
+	}
+
+	// Entrada para leitores
+	public synchronized void EntraLeitor (String id) {
+		try {
+			while (this.escr > 0) {
+				//if (this.escr > 0) {
+				System.out.println ("le.leitorBloqueado("+id+")");
+				wait();	//bloqueia pela condicao logica da aplicacao
+			}
+			this.leit++;	//registra que ha mais um leitor lendo
+			System.out.println ("le.leitorLendo("+id+")");
+		} catch (InterruptedException e) { }
+	}
+
+	// Saida para leitores
+	public synchronized void SaiLeitor (String id) {
+		this.leit--; //registra que um leitor saiu
+		if (this.leit == 0)
+			this.notify(); //libera escritor (caso exista escritor bloqueado)
+		System.out.println ("le.leitorSaindo("+id+")");
+	}
+
+	// Entrada para escritores
+	public synchronized void EntraEscritor (String id) {
+		try {
+			while ((this.leit > 0) || (this.escr > 0)) {
+			//if ((this.leit > 0) || (this.escr > 0)) {
+			System.out.println ("le.escritorBloqueado("+id+")");
+			wait();  //bloqueia pela condicao logica da aplicacao
+			}
+			this.escr++; //registra que ha um escritor escrevendo
+			System.out.println ("le.escritorEscrevendo("+id+")");
+		} catch (InterruptedException e) { }
+	}
+
+	// Saida para escritores
+	public synchronized void SaiEscritor (String id) {
+		this.escr--; //registra que o escritor saiu
+		notifyAll(); //libera leitores e escritores (caso existam leitores ou escritores bloqueados)
+		System.out.println ("le.escritorSaindo("+id+")");
+	}
 }

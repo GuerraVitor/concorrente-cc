@@ -10,3 +10,7 @@
 2 - na main, criar threads da classe que extende threads
 3 - iniciar as threads
 -
+o que eu preciso saber:
+
+com implementar semaforos em C
+como implementar

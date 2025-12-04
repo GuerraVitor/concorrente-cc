@@ -65,7 +65,12 @@ void AntesEscrita(){
 	sem_wait(&escr);				//fecho para escritores
 }
 
-
+void DepoisEscrita(){
+	sem_post(&escr);				//abro para escritores
+	sem_wait(em_e); e--;			//fecho variavel e;
+	if(e == 0) sem_post(&leit);		//se nao tiver mais escritores eu libero para leitores
+	sem_post(&em_e);				//solto variavel e;
+}
 
 void AntesLeitura(){
 	sem_wait(&leit);				//checo se posso entrar em leitura

@@ -1,0 +1,81 @@
+24.2 p2:
+
+1)
+sem_t slot-cheio
+sem_t slot-vazio
+sem_t lock-leit, lock-escr
+
+sem_init (slot-cheio, 0, 0);
+sem_init (slot-vazio, 0, B);
+sem_init (mutex-cons, 0, 0);
+sem_init (mutex-prod, 0, 0);
+
+buffer[B];
+
+void insere(int item){
+	static int in = 0;
+	sem_wait(&slot-vazio);
+	sem_wait(&mutex-prod);
+	buffer[in] = item;
+	in = (in + 1) % B;
+	sem_post(&mutex-prod);
+	sem_post(&slot-cheio);
+}
+
+int retira(void){
+	static int out = 0;
+	int item;
+	sem_wait(&slot-cheio);
+	sem_wait(&mutex-cons);
+	item = buffer[out];
+	out = (out + 1) % B;
+	sem_wait(
+}
+
+p2 2013 q1:
+
+a)
+
+public synchronized void EntraEscritor(int id) {
+	while (this.escr > 0 || this.leit > 0) {
+		try {wait()} catch (InterruptedExecption e)}
+	this.escr++;
+}
+
+}
+
+p2 23.1
+q2:
+
+- N threads
+- + de 1 leitura ao mesmo tempo
+- apenas 1 de escrita por vez
+- nao pode ler enquanto escreve
+- novas leituras so podem iniciar qundo nao houver escrita esperando
+
+sem_t escr //tranca escritor
+sem_t leit //tranca leitor
+sem_t em_l, em_e, // tranca contagem da fila
+int e, l; //iniciados em 0
+
+void AntesEscrita(){
+	sem_wait(&em_e); e++;			//fecho variavel e
+	if(e == 1) sem_wait(&leit);		//se só tiver eu pra escrever fecho para leitores
+	sem_post(&em_e);				//solto variavel e
+	sem_wait(&escr);				//fecho para escritores
+}
+
+void DepoisEscrita(){
+	sem_post(&escr);				//abro para escritores
+	sem_wait(em_e); e--;			//fecho variavel e;
+	if(e == 0) sem_post(&leit);		//se nao tiver mais escritores eu libero para leitores
+	sem_post(&em_e);				//solto variavel e;
+}
+
+void AntesLeitura(){
+	sem_wait(&leit);				//checo se posso entrar em leitura
+	sem_wait(&em_l); l++;			//fecho variavel l
+	if(l == 1) sem_wait(&escr)		//fecho para escrita se eu for o unico lendo
+	sem_post(&em_l);				//solto variavel l
+	sem_post(&)
+}

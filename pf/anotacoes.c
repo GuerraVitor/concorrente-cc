@@ -42,14 +42,25 @@ for (int i=0; i<nt+1; i++) {
 	} 
 } 
 
-//cria variavel de lock para exclusão mutua
+//cria variavel de Sincronização por exclusão mutua
 	pthread_mutex_t mutex;
 	pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_lock(&mutex);
 	//aqui estaria a seção crítica do codigo
 	pthread_mutex_unlock(&mutex);
-
-
+	
+//cria variavel de sincronização por condição
+	pthread_cond_t cond
+	pthread_cond_init (&cond, NULL)
+	pthread_cond_destroy (cond)
+	pthread_cond_wait(&cond, &mutex)
+		//bloqueia a thread na condição (cond)
+		//chamada com mutex locado, desloca mutex quando finaliza
+	pthread_cond_signal(&cond)
+		//desbloqueia uma thread esperando pela condição (cond)
+	
+	
+	
 //exemplo de função executada pela thread
 void *print_hello (void *arg){
 	t_args args = *(t_args*) arg;
@@ -57,18 +68,6 @@ void *print_hello (void *arg){
 	free(arg);
 	pthread_exit(NULL);
 }
-'	'
-pthread_cond_t cond
-pthread_cond_init (&cond, NULL)
-pthread_cond_destroy (&cond)
-
-pthread_cond_wait(&cond, &mutex)
-	//bloqueia a thread na condição (cond)
-	//chamada com mutex locado, desloca mutex quando finaliza
-
-pthread_cond_signal(&cond)
-	//desbloqueia uma thread esperando pela condição (cond)
-
 //exemplo de função executada pela thread com retorno
 void *PrintHello (void *arg) {
   t_ret *ret;

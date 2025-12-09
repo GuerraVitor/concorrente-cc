@@ -31,10 +31,10 @@
      - Objetivo: Permitir que threads esperem (bloqueiem) até que uma condição lógica se torne verdadeira.
        Sempre usada em conjunto com um mutex.
      - Funções:
-       - pthread_cond_wait(&cond, &mutex)`: Libera o mutex e bloqueia a thread na variável `cond`.
+       - pthread_cond_wait(&cond, &mutex): Libera o mutex e bloqueia a thread na variável `cond`.
          Quando acordada, ela tenta readquirir o mutex antes de continuar.
-       - pthread_cond_signal(&cond)`: Acorda *uma* thread que está esperando em `cond`.
-       - pthread_cond_broadcast(&cond)`: Acorda *todas* as threads que estão esperando em `cond`.
+       - pthread_cond_signal(&cond): Acorda *uma* thread que está esperando em `cond`.
+       - pthread_cond_broadcast(&cond): Acorda *todas* as threads que estão esperando em `cond`.
 
  (g) Necessidade de Comunicação e Sincronização
      - Correção: Evitar erros de concorrência (corridas de dados, violações de atomicidade/ordem)

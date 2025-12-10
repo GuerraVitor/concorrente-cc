@@ -90,21 +90,6 @@ void barreira(int nthreads) {
     sem_post(&cond);
   }
 }
-//versao sem comentarios:
-void barreira(int numThreads) {
-  sem_wait(&mutex);
-  bloqueadas++;
-  if (bloqueadas < numThreads) {
-    sem_post(&mutex);
-    sem_wait(&cond);
-    bloqueadas--;
-    if (bloqueadas==0) sem_post(&mutex);
-    else sem_post(&cond); 
-  } else {
-    bloqueadas--;
-    sem_post(&cond);
-  }
-}
 
 
 //exemplo de função executada pela thread

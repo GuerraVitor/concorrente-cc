@@ -101,7 +101,6 @@ void barreira(int numThreads) {
     if (bloqueadas==0) sem_post(&mutex);
     else sem_post(&cond); 
   } else {
-    printf("\n");
     bloqueadas--;
     sem_post(&cond);
   }

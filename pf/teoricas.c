@@ -49,29 +49,31 @@
      - Desvantagem: É a principal fonte de problemas de concorrência. Todo acesso compartilhado
        que envolva escrita deve ser protegido por mecanismos de sincronização.
 
- (i) Multiprocesso
+Técnicas para implementação de programas concorrentes:
+
+ (a) Multiprocesso
      - Definição: Cada fluxo lógico de execução é um processo escalonado e mantido pelo SO.
      - Criação: Processos podem ser disparados a priori ou criados como filhos de um processo principal.
      - Memória: O espaço de endereçamento é exclusivo de cada processo.
      - Comunicação: Requer mecanismos explícitos de interação interprocessos (IPC).
      - Escalonamento: Feito pelo SO, normalmente de forma preemptiva.
 
- (j) I/O Multiplexado
+ (b) I/O Multiplexado
      - Definição: A aplicação escalona seus próprios fluxos de execução dentro de um único processo e espaço de endereçamento.
      - Modelo: A aplicação funciona como uma máquina de estados controlada pelo programa principal, baseada em eventos de I/O.
 
- (k) Multithreading
+ (c) Multithreading
      - Definição: Fluxos lógicos independentes (threads) dentro de um mesmo processo.
      - Memória: Compartilham o mesmo espaço de endereçamento.
      - Escalonamento: Realizado pelo SO, geralmente de forma preemptiva.
 
- (l) Gerência Cooperativa com Co-rotinas
+ (d) Gerência Cooperativa com Co-rotinas
      - Definição: Linhas de execução distintas, cada uma com sua própria pilha, variáveis locais e ponteiro de instrução.
      - Compartilhamento: Compartilham variáveis globais, assim como as threads.
      - Diferença Principal: Co-rotinas são colaborativas e não executam simultaneamente. A troca de controle é explícita.
      - Execução: Apenas uma co-rotina executa por vez, e a suspensão é solicitada pela própria co-rotina.
 
- (m) Futuros ou Computação Assíncrona
+ (e) Futuros ou Computação Assíncrona
      - Definição: Primitiva de alto nível que permite que uma computação seja executada em paralelo e seu resultado
        capturado posteriormente no programa.
      - Implementação: Geralmente utiliza um pool de threads ou de processos.

@@ -51,16 +51,63 @@ for (int i=0; i<nt+1; i++) {
 	
 //cria variavel de sincronização por condição
 	pthread_cond_t cond
-	pthread_cond_init (&cond, NULL)
-	pthread_cond_destroy (cond)
+	pthread_cond_init(&cond, NULL)
+	pthread_cond_destroy(cond)
 	pthread_cond_wait(&cond, &mutex)
 		//bloqueia a thread na condição (cond)
 		//chamada com mutex locado, desloca mutex quando finaliza
 	pthread_cond_signal(&cond)
 		//desbloqueia uma thread esperando pela condição (cond)
 	
-	
-	
+
+//sincronização por semáforos
+sem_init(sem)
+sem_wait() // decremento
+  // se sem > 0 ==> sem-- e retorna sem
+  // se sem == 0 ==> chamada bloqueia até sem > 0
+sem_post() // incremento
+  // sem++ e se tiver thread esperando - bloqueada no wait(), desbloqueia
+sem_destroy() //desaloca e finaliza semáforo
+
+//barreira com semaforos
+sem_t mutex; //iniciado na main com valor 1
+sem_t cond; //iniciado na main com valor 0
+void barreira(int nthreads) {
+  static int bloqueadas=0; //contador de threads que ja chegaram na barreira
+  sem_wait(&mutex);
+  bloqueadas++;
+
+  if (bloqueadas < nthreads) { //ainda faltam threads pra chegar
+    sem_post(&mutex);
+    sem_wait(&cond); //bloqueia esperando as demais threads
+    bloqueadas--; //acordei e ja diminui uma thread dormindo
+    if (bloqueadas==0) sem_post(&mutex); //se for a ultima thread a sair libera a EM
+    else sem_post(&cond); //senao libera outra thread bloqueada
+  }
+
+  else { //se for a ultima thread a invocar a funcao, comec¸a a liberar as demais
+    bloqueadas--;
+    sem_post(&cond);
+  }
+}
+//versao sem comentarios:
+void barreira(int numThreads) {
+  sem_wait(&mutex);
+  bloqueadas++;
+  if (bloqueadas < numThreads) {
+    sem_post(&mutex);
+    sem_wait(&cond);
+    bloqueadas--;
+    if (bloqueadas==0) sem_post(&mutex);
+    else sem_post(&cond); 
+  } else {
+    printf("\n");
+    bloqueadas--;
+    sem_post(&cond);
+  }
+}
+
+
 //exemplo de função executada pela thread
 void *print_hello (void *arg){
 	t_args args = *(t_args*) arg;
@@ -84,3 +131,34 @@ void *PrintHello (void *arg) {
 
   pthread_exit((void*) ret);
 }
+
+
+Fluxo com Sincronização por Condição:
+
+1 - Variáveis Globais:
+  - Variável de estado (controla a condição lógica, ex: int contador = 0).
+  - pthread_mutex_t mutex;
+  - pthread_cond_t cond;
+
+2 - Na thread que ESPERA pela condição:
+  - pthread_mutex_lock(&mutex);
+  - while (condicao_nao_atendida) {
+  -   pthread_cond_wait(&cond, &mutex);
+  - }
+  - (executa o código após a condição ser atendida)
+  - pthread_mutex_unlock(&mutex);
+	  
+3 - Na thread que SINALIZA a condição:
+  - pthread_mutex_lock(&mutex);
+  - (altera a variável de estado para a condição ser atendida)
+  - pthread_cond_signal(&cond); // ou pthread_cond_broadcast(&cond);
+  - pthread_mutex_unlock(&mutex);
+	  
+2 - Na main:
+  - pthread_mutex_init(&mutex, NULL);
+  - pthread_cond_init(&cond, NULL);
+  - (criação e join das threads)
+  - pthread_mutex_destroy(&mutex);
+  - pthread_cond_destroy(&cond);
+	
+
